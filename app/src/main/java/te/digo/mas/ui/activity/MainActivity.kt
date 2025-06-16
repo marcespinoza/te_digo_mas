@@ -1,27 +1,20 @@
-package te.digo.mas.ui.theme.activity
+package te.digo.mas.ui.activity
 
 import android.os.Bundle
-import android.provider.CalendarContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,24 +23,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import androidx.lifecycle.viewmodel.compose.viewModel
-import te.digo.mas.R
+import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import te.digo.mas.domain.model.Tile
+import te.digo.mas.domain.util.RandomColors
+import te.digo.mas.ui.viewmodel.PictogramViewModel
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +53,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PictogramApp(viewModel: PictogramViewModel = viewModel()) {
-    val pictograms by viewModel.pictograms.collectAsState()
+fun PictogramApp(viewModel: PictogramViewModel = hiltViewModel()) {
+    val pictograms by viewModel.listTiles.observeAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -71,57 +66,54 @@ fun PictogramApp(viewModel: PictogramViewModel = viewModel()) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PictogramGrid(pictograms: List<Int>) {
+fun PictogramGrid(pictograms: List<Tile>?) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val numRows = 3  // You want 3 rows
+    val numRows = 3
     val itemHeight = screenHeight / numRows
+    val randomColors = RandomColors()
+    var isSelected by remember { mutableStateOf(false) }
+    val selectedIndex = remember { mutableStateOf(-1) }
+
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),  // 2 columns
+        columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
-        items(pictograms) { pictogram ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(itemHeight)  // Set fixed height based on screen
-                    .border(
-                        width = 1.dp,
-                        color = Color.Blue,
-                        shape = RoundedCornerShape(12.dp)
-                    ),
-                onClick = {},
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+        pictograms?.let {
+            itemsIndexed(pictograms) { index, pictogram ->
+                val itemColor = remember(pictogram) { Color(randomColors.getColor()) }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(itemHeight - 12.dp)  // Set fixed height based on screen
+                        .border(
+                            width = 15.dp,
+                            color = if (selectedIndex.value == index) Color.Black else Color.Transparent,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    colors = CardDefaults.cardColors(containerColor = itemColor),
+                    onClick = {selectedIndex.value = index},
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(
-                        text = "Picto",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = pictogram.description,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-class PictogramViewModel : ViewModel() {
-    private val _pictograms = MutableStateFlow(
-        listOf(
-            R.drawable.picto,
-            R.drawable.picto,
-            R.drawable.picto,
-            R.drawable.picto,
-            R.drawable.picto,
-            R.drawable.picto
-        )
-    )
-    val pictograms: StateFlow<List<Int>> = _pictograms
-}
+
