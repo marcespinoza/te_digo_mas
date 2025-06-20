@@ -20,14 +20,6 @@ object RoomModule {
     @Provides
     fun provideTeDigoMasDatabase(@ApplicationContext context: Context): TeDigoMasDatabase {
         return Room.databaseBuilder(context, TeDigoMasDatabase::class.java, "tedigomas")
-            /*.addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) {
-                    super.onCreate(db)
-                    db.execSQL(" INSERT INTO Tile (name, text, audio) VALUES (''Hola', 'hola', 'Hola')")
-                    db.execSQL(" INSERT INTO Tile (name, text, audio) VALUES (''Hola', 'Chau', 'Hola')")
-
-                }
-            })*/
             .createFromAsset("database/tedigomas.db")
             .build()
     }
