@@ -13,8 +13,8 @@ interface TileDao {
     @Query("SELECT * FROM tile WHERE id = :id")
     fun getTileById(id: Int): Tile
 
-    @Query("DELETE FROM tile where id = :id")
-    fun deleteTileById(id: Int)
+    @Query("DELETE FROM tile where description = :description")
+    fun deleteTileByDescription(description: String)
 
     @Query("INSERT INTO tile (description, audio) VALUES (:description, :audio)")
     fun insertTile(description: String, audio: String)

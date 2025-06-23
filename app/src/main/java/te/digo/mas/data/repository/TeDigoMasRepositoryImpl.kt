@@ -18,7 +18,7 @@ class TeDigoMasRepositoryImpl @Inject constructor(
         return tileDao.insertTile(description, audio)
     }
 
-    override suspend fun removeTile(id: Int){
-        return tileDao.deleteTileById(id)
+    override suspend fun deleteTile(description: String){
+        tileDao.deleteTileByDescription(description)
     }
 }

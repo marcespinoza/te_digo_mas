@@ -3,10 +3,12 @@ package te.digo.mas.ui.activity
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,15 +56,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import te.digo.mas.R
 import te.digo.mas.domain.model.Tile
 import te.digo.mas.domain.util.RandomColors
-import te.digo.mas.ui.viewmodel.PictogramViewModel
+import te.digo.mas.ui.BottomShettDialog
+import te.digo.mas.ui.viewmodel.TileViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             PictogramApp()
         }
@@ -70,31 +73,37 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PictogramApp(viewModel: PictogramViewModel = hiltViewModel()) {
-    val pictograms by viewModel.listTiles.observeAsState()
+fun PictogramApp(viewModel: TileViewModel = hiltViewModel()) {
+    val tiles by viewModel.listTiles.observeAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        PictogramGrid(pictograms)
+        PictogramGrid(tiles)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PictogramGrid(pictograms: List<Tile>?) {
+fun PictogramGrid(listTiles: List<Tile>?) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val numRows = 2
     val itemHeight = screenHeight / numRows
     val randomColors = RandomColors()
     val context = LocalContext.current
-    // Keep track of the currently focused item's index
+    var selectedTile by remember { mutableStateOf<Tile?>(null) }
     var currentFocusedIndex by remember { mutableIntStateOf(-1) }
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    if(showDialog) {
+        selectedTile?.let { BottomShettDialog(onDismissRequest = { showDialog = false }, it) }
+    }
 
     val mediaPlayer = remember { MediaPlayer() }
-
     val focusRequestersMap = remember { mutableMapOf<Int, FocusRequester>() }
 
     DisposableEffect(Unit) {
@@ -111,7 +120,7 @@ fun PictogramGrid(pictograms: List<Tile>?) {
                 .padding(paddingValues)
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.key == Key.Enter && keyEvent.type == KeyEventType.KeyDown) {
-                        pictograms?.let {
+                        listTiles?.let {
                             val nextIndex = (currentFocusedIndex + 1) % it.size
                             focusRequestersMap[nextIndex]?.requestFocus()
                             return@onKeyEvent true
@@ -123,8 +132,8 @@ fun PictogramGrid(pictograms: List<Tile>?) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            pictograms?.let {
-                itemsIndexed(pictograms) { index, pictogram ->
+            listTiles?.let {
+                itemsIndexed(listTiles) { index, pictogram ->
                     val itemColor = remember(pictogram) { Color(randomColors.getColor()) }
                     var isCardFocused by remember { mutableStateOf(false) }
                     val itemFocusRequester = remember {
@@ -154,12 +163,18 @@ fun PictogramGrid(pictograms: List<Tile>?) {
                                 width = if (isCardFocused) 5.dp else 0.dp,
                                 color = if (isCardFocused) Color.Black else Color.Transparent,
                                 shape = RoundedCornerShape(12.dp)
+                            )
+                            .combinedClickable(
+                                onClick = {
+                                    itemFocusRequester.requestFocus()
+                                    playSound(context, mediaPlayer, pictogram.audio)
+                                },
+                                onLongClick = {
+                                    selectedTile = pictogram
+                                    showDialog = true
+                                }
                             ),
                         colors = CardDefaults.cardColors(containerColor = itemColor),
-                        onClick = {
-                            itemFocusRequester.requestFocus()
-                            playSound(context, mediaPlayer, pictogram.audio)
-                        },
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     ) {
                         Box(
@@ -178,8 +193,8 @@ fun PictogramGrid(pictograms: List<Tile>?) {
             }
         }
 
-        LaunchedEffect(pictograms) {
-            if (pictograms?.isNotEmpty() == true) {
+        LaunchedEffect(listTiles) {
+            if (listTiles?.isNotEmpty() == true) {
                 delay(100)
                 focusRequestersMap[0]?.requestFocus()
             }
@@ -202,7 +217,6 @@ fun playSound(context: Context, mediaPlayer: MediaPlayer, audio: String) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        // Handle error, e.g., show a Toast
     }
 }
 

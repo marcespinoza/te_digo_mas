@@ -1,4 +1,4 @@
 package te.digo.mas.domain.useCase
 
-class AddTile {
+class AddTileUseCase {
 }
