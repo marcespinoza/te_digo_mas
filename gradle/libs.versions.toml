@@ -36,6 +36,7 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 hilt = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 hilt-compose-navigation = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
+lottie = { module = "com.airbnb.android:lottie-compose", version = "4.0.0" }
 
 
 [plugins]

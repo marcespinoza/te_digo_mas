@@ -4,30 +4,25 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -43,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -66,7 +62,9 @@ fun BottomShettDialog(
 ) {
     var isPressed by rememberSaveable { mutableStateOf(false) }
     var textState by remember { mutableStateOf(selectedTile.description) }
-    var showConfirmationDialog by rememberSaveable { mutableStateOf(false)}
+    var showConfirmationDialog by rememberSaveable { mutableStateOf(false) }
+    var showAddTileDialog by rememberSaveable { mutableStateOf(false) }
+
 
     val focusRequester = remember { FocusRequester() }
 
@@ -75,18 +73,25 @@ fun BottomShettDialog(
     )
 
     LaunchedEffect(isPressed) {
-          if (isPressed) focusRequester.requestFocus()
+        if (isPressed) focusRequester.requestFocus()
     }
 
-    if (showConfirmationDialog) ConfirmationDialog(
-        onDismissRequest = { showConfirmationDialog = false },
-        onConfirmation = {
-            tileViewModel.deleteTile(selectedTile.description)
-            showConfirmationDialog = false
-            onDismissRequest()
-                         },
-        description = selectedTile.description
-    )
+    if (showConfirmationDialog)
+        ConfirmationDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            onConfirmation = {
+                tileViewModel.deleteTile(selectedTile.description)
+                showConfirmationDialog = false
+                onDismissRequest() },
+            description = selectedTile.description
+        )
+
+    if (showAddTileDialog)
+        AddTileDialog(
+            onDismissRequest = { showAddTileDialog = false },
+            onConfirmation = { showAddTileDialog = false },
+            tileViewModel = tileViewModel
+        )
 
     ModalBottomSheet(
         modifier = Modifier.focusRequester(focusRequester),
@@ -171,8 +176,23 @@ fun BottomShettDialog(
                     textAlign = TextAlign.Center
                 )
             )
+            Text(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
+                    .clickable { showAddTileDialog = true },
+                text = stringResource(id = R.string.add_tile),
+                fontSize = 18.sp,
+                style = TextStyle(
+                    color = colorResource(id = R.color.green_2),
+                    fontSize = 15.sp,
+                    fontFamily = FontFamily(Font(R.font.comforta_medium)),
+                    textAlign = TextAlign.Center
+                )
+            )
             Button(
                 modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.teal_700)),
                 onClick = { onDismissRequest() }
             ) {
                 Text(text = stringResource(id = R.string.cancel))

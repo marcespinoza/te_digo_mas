@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.hilt.compose.navigation)
+    implementation(libs.lottie)
     ksp(libs.room.compiler)
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
