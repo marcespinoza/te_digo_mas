@@ -3,6 +3,7 @@ package te.digo.mas.di
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.MediaRecorder
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -13,7 +14,6 @@ import te.digo.mas.data.TeDigoMasDatabase
 import te.digo.mas.data.dao.TileDao
 import te.digo.mas.data.repository.TeDigoMasRepositoryImpl
 import te.digo.mas.domain.repository.TeDigoMasRepository
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -50,5 +50,14 @@ object MediaPlayerModule {
                     .build()
             )
         }
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object MediaRecorderModule {
+    @Provides
+    fun provideMediaRecorder(@ApplicationContext context: Context): MediaRecorder {
+        return MediaRecorder()
     }
 }

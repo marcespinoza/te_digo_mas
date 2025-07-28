@@ -1,6 +1,5 @@
 package te.digo.mas.domain.audio
 
-import android.content.Context
 import android.media.MediaRecorder
 import te.digo.mas.domain.IAudioRecorder
 import java.io.File
@@ -21,11 +20,9 @@ class AudioRecorder @Inject constructor(
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(FileOutputStream(outputFile).fd)
-
+            setOutputFile(FileOutputStream(outputFile).fd   )
             prepare()
             start()
-
             recorder = this
         }
     }

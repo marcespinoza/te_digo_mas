@@ -76,6 +76,7 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.hilt.compose.navigation)
     implementation(libs.lottie)
+    implementation(libs.accompanist.permissions)
     ksp(libs.room.compiler)
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)

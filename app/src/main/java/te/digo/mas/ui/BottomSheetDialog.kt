@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import te.digo.mas.R
 import te.digo.mas.domain.model.Tile
+import te.digo.mas.ui.viewmodel.AudioViewModel
 import te.digo.mas.ui.viewmodel.TileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +59,8 @@ import te.digo.mas.ui.viewmodel.TileViewModel
 fun BottomShettDialog(
     onDismissRequest: () -> Unit,
     selectedTile: Tile,
-    tileViewModel: TileViewModel = hiltViewModel()
+    tileViewModel: TileViewModel = hiltViewModel(),
+    audioViewModel: AudioViewModel = hiltViewModel()
 ) {
     var isPressed by rememberSaveable { mutableStateOf(false) }
     var textState by remember { mutableStateOf(selectedTile.description) }
@@ -90,7 +92,8 @@ fun BottomShettDialog(
         AddTileDialog(
             onDismissRequest = { showAddTileDialog = false },
             onConfirmation = { showAddTileDialog = false },
-            tileViewModel = tileViewModel
+            tileViewModel = tileViewModel,
+            audioViewModel = audioViewModel
         )
 
     ModalBottomSheet(
