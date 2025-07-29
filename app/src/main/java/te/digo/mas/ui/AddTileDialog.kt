@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,8 +37,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -68,6 +71,7 @@ fun AddTileDialog(
     val scale by animateFloatAsState(if (isPressed) 1.2f else 1f, label = "")
     val context = LocalContext.current
     var audioFile: File? by remember { mutableStateOf(null) }
+    val isPlaying by audioViewModel.isPlaying.collectAsState()
 
     val audioRecordPermissionState = rememberPermissionState(
         Manifest.permission.RECORD_AUDIO
@@ -102,11 +106,11 @@ fun AddTileDialog(
                             color = Color.Transparent
                         ),
                     onValueChange = { tileDescription = it },
-                    label = { Text("Tile Name") },
-
+                    label = { Text("Tile Name") }
                 )
                 Column (
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ){
                     LottieAnimation(
                         isPlaying = isPressed,
@@ -115,22 +119,31 @@ fun AddTileDialog(
                         modifier = Modifier
                             .size(width = 200.dp, height = 100.dp)
                     )
-                    Row (
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
+                    ConstraintLayout(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        val (playerIcons, recordIcon) = createRefs()
                         IconButton(
                             onClick = { audioFile?.let { audioViewModel.playAudio(it) } },
                             enabled = audioFile != null,
-                            modifier = Modifier.size(50.dp)
+                            modifier = Modifier
+                                .size(50.dp)
+                                .constrainAs(playerIcons) {
+                                    end.linkTo(recordIcon.start)
+                                    top.linkTo(parent.top)
+                                    bottom.linkTo(parent.bottom)
+                                }
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.playicon),
-                                contentDescription =  "Play icon button"
+                                painter = painterResource(if (isPlaying) R.drawable.pauseicon else R.drawable.playicon),
+                                contentDescription =  "Play pause icon button"
                             )
                         }
                         Box(
                             modifier = Modifier
+                                .constrainAs(recordIcon) {
+                                    centerHorizontallyTo(parent)
+                                }
                                 .clip(CircleShape)
                                 .graphicsLayer {
                                     scaleX = scale
@@ -141,18 +154,17 @@ fun AddTileDialog(
                                         onLongPress = { /* handle long press */ },
                                         onPress = {
                                             if (audioRecordPermissionState.status.isGranted) {
-                                            isPressed = true
+                                                isPressed = true
                                                 val audioDir = File(context.filesDir, "AudioTiles")
                                                 if (!audioDir.exists()) {
                                                     audioDir.mkdir()
                                                 }
                                                 val file = File(audioDir, "$tileDescription.mp3")
-                                                audioFile = file
                                                 audioViewModel.saveNewAudio(file)
-
                                                 tryAwaitRelease()
                                                 isPressed = false
-                                            audioViewModel.stopAudioRecorder()
+                                                audioFile = file
+                                                audioViewModel.stopAudioRecorder()
                                             } else {
                                                 audioRecordPermissionState.launchPermissionRequest()
                                             }
@@ -168,8 +180,12 @@ fun AddTileDialog(
                             )
                         }
                     }
-
                 }
+                Text(
+                    fontSize = 10.sp,
+                    color = Color.LightGray,
+                    text = "Mantenga presionado para grabar"
+                )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),

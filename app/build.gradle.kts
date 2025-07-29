@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.compose)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.hilt.compose.navigation)
     implementation(libs.lottie)
     implementation(libs.accompanist.permissions)
