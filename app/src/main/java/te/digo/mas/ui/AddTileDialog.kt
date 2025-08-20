@@ -198,7 +198,10 @@ fun AddTileDialog(
                         Text(stringResource(id = R.string.cancel))
                     }
                     TextButton(
-                        onClick = { tileViewModel.addTile(tileDescription) },
+                        onClick = {
+                            tileViewModel.addTile(tileDescription)
+                            onDismissRequest()
+                                  },
                         modifier = Modifier.padding(8.dp),
                         enabled = tileDescription.isNotBlank()
                     ) {

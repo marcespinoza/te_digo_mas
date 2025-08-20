@@ -37,15 +37,16 @@ class TileViewModel @Inject constructor(
 
     fun deleteTile(description: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            deleteTileUseCase.invoke(description)
+            deleteTileUseCase(description)
             fetchAllTiles()
         }
     }
 
     fun addTile(description: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            addTileUseCase.invoke(description)
+            addTileUseCase(description)
         }
+        fetchAllTiles()
     }
 
 }

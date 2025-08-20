@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -74,6 +75,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PictogramApp(viewModel: TileViewModel = hiltViewModel()) {
+
     val tiles by viewModel.listTiles.observeAsState()
 
     Surface(
@@ -89,15 +91,13 @@ fun PictogramApp(viewModel: TileViewModel = hiltViewModel()) {
 fun PictogramGrid(listTiles: List<Tile>?) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val numRows = 2
+    val numRows = 3
     val itemHeight = screenHeight / numRows
     val randomColors = RandomColors()
     val context = LocalContext.current
     var selectedTile by remember { mutableStateOf<Tile?>(null) }
     var currentFocusedIndex by remember { mutableIntStateOf(-1) }
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
+    var showDialog by remember { mutableStateOf(false) }
 
     if(showDialog) {
         selectedTile?.let { BottomShettDialog(onDismissRequest = { showDialog = false }, it) }
@@ -133,7 +133,15 @@ fun PictogramGrid(listTiles: List<Tile>?) {
             contentPadding = PaddingValues(8.dp)
         ) {
             listTiles?.let {
-                itemsIndexed(listTiles) { index, pictogram ->
+                itemsIndexed(
+                    listTiles,
+                    span = { index, _ ->
+                        if (index == listTiles.lastIndex && listTiles.size % 2 != 0) {
+                            GridItemSpan(2)
+                        } else {
+                            GridItemSpan(1)
+                        }
+                    }) { index, pictogram ->
                     val itemColor = remember(pictogram) { Color(randomColors.getColor()) }
                     var isCardFocused by remember { mutableStateOf(false) }
                     val itemFocusRequester = remember {
@@ -153,7 +161,7 @@ fun PictogramGrid(listTiles: List<Tile>?) {
                             }
                             .onKeyEvent {
                                 if (it.key == Key.Tab && it.type == KeyEventType.KeyDown) {
-                                    playSound(context, mediaPlayer, pictogram.audio)
+                                    playSound(context, mediaPlayer, pictogram.name)
                                     return@onKeyEvent true
                                 }
                                 return@onKeyEvent false
@@ -167,7 +175,7 @@ fun PictogramGrid(listTiles: List<Tile>?) {
                             .combinedClickable(
                                 onClick = {
                                     itemFocusRequester.requestFocus()
-                                    playSound(context, mediaPlayer, pictogram.audio)
+                                    playSound(context, mediaPlayer, pictogram.name)
                                 },
                                 onLongClick = {
                                     selectedTile = pictogram
@@ -182,7 +190,7 @@ fun PictogramGrid(listTiles: List<Tile>?) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = pictogram.description,
+                                text = pictogram.name,
                                 fontSize = 30.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White

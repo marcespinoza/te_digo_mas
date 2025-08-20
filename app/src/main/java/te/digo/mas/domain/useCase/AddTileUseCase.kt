@@ -8,7 +8,7 @@ class AddTileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(description: String){
-        repository.addTile(description, "")
+        repository.addTile(description)
     }
 
 }

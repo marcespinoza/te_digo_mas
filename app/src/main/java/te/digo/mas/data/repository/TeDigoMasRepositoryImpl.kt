@@ -14,11 +14,11 @@ class TeDigoMasRepositoryImpl @Inject constructor(
         return list.map { it.toModel() }
     }
 
-    override suspend fun addTile(description: String, audio: String) {
-        return tileDao.insertTile(description, audio)
+    override suspend fun addTile(name: String) {
+        return tileDao.insertTile(name)
     }
 
-    override suspend fun deleteTile(description: String){
-        tileDao.deleteTileByDescription(description)
+    override suspend fun deleteTile(name: String){
+        tileDao.deleteTileByDescription(name)
     }
 }

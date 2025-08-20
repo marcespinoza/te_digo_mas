@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -38,7 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -63,7 +63,7 @@ fun BottomShettDialog(
     audioViewModel: AudioViewModel = hiltViewModel()
 ) {
     var isPressed by rememberSaveable { mutableStateOf(false) }
-    var textState by remember { mutableStateOf(selectedTile.description) }
+    var textState by remember { mutableStateOf(selectedTile.name) }
     var showConfirmationDialog by rememberSaveable { mutableStateOf(false) }
     var showAddTileDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -82,10 +82,10 @@ fun BottomShettDialog(
         ConfirmationDialog(
             onDismissRequest = { showConfirmationDialog = false },
             onConfirmation = {
-                tileViewModel.deleteTile(selectedTile.description)
+                tileViewModel.deleteTile(selectedTile.name)
                 showConfirmationDialog = false
                 onDismissRequest() },
-            description = selectedTile.description
+            description = selectedTile.name
         )
 
     if (showAddTileDialog)
@@ -159,7 +159,24 @@ fun BottomShettDialog(
                     enabled = !isPressed
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Edit ,
+                        painter = painterResource(id = R.drawable.editicon),
+                        tint = Color.Unspecified, // keep original colors
+                        modifier = Modifier.graphicsLayer {
+                            alpha = if (!isPressed) 1f else 0.3f
+                        },
+                        contentDescription = if (isPressed) "Selected icon button" else "Unselected icon button."
+                    )
+                }
+                IconButton(
+                    onClick = { isPressed = !isPressed },
+                    enabled = isPressed
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.saveicon),
+                        tint = Color.Unspecified, // keep original colors
+                        modifier = Modifier.graphicsLayer {
+                            alpha = if (isPressed) 1f else 0.3f
+                        },
                         contentDescription = if (isPressed) "Selected icon button" else "Unselected icon button."
                     )
                 }

@@ -10,11 +10,9 @@ import te.digo.mas.domain.model.Tile as TileModel
 class Tile (
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    @Nonnull val description: String,
-    @Nonnull val audio: String,
+    @Nonnull val name: String
 ) {
     fun toModel() = TileModel (
-        description = description,
-        audio = audio,
+        name = name,
     )
 }

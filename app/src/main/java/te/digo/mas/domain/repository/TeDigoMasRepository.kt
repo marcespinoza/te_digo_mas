@@ -7,9 +7,8 @@ interface TeDigoMasRepository {
 
     suspend fun getAllTiles(): List<Tile>
 
-    suspend fun addTile(description: String, audio: String)
+    suspend fun addTile(name: String)
 
-    suspend fun deleteTile(description: String)
-
+    suspend fun deleteTile(name: String)
 
 }
